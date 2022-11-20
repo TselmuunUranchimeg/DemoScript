@@ -9,20 +9,35 @@ const stripe = new Stripe(process.env.STRIPE_KEY!, {
     apiVersion: "2022-11-15"
 });
 
-(async () => {
+const message = async () => {
     try {
-        const messagePromise = client.messages.create({
+        await client.messages.create({
             body: "This is a custom message",
             to: process.env.TWILIO_RECEIVER!,
             from: process.env.TWILIO_PHONE_NUMBER!
         });
-        const stripePromise = stripe.paymentIntents.create({
+        console.log("Successfully sent message to verified number since this is a trial account");
+    }
+    catch (e) {
+        throw e;
+    }
+};
+
+const payment = async () => {
+    try {
+        await stripe.paymentIntents.create({
             amount: 200,
             currency: "usd"
         });
-        await Promise.all([messagePromise, stripePromise]);
+        console.log("Successfully made payment");
     }
     catch (e) {
-        console.log(e);
+        throw e;
     }
+};
+
+(async () => {
+    const messagePromise = message();
+    const paymentPromise= payment();
+    await Promise.all([messagePromise, paymentPromise]);
 })();
